@@ -84,12 +84,11 @@ def get_image_matrix(directory, start, end):
         matrix[i, :, :] = x
     return (matrix.astype('float32'))
 
-print(os.environ['CARS_DATASET_PATH'])
-fp = loadmat("D:\\test\\School\\UVM\\Machine Learning\\Project\\carBrains\\dataset\\devkit\\cars_train_annos.mat")
+fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "devkit\\cars_train_annos.mat")))
 input_directory = "carBrains/dataset/cars_train/*.jpg"
 train_X = get_image_matrix(input_directory, 1, num_train_imgs) #8144
 train_Y = get_label_matrix(1, num_train_imgs)
-fp = loadmat("D:\\test\\School\\UVM\\Machine Learning\\Project\\carBrains\\dataset\\devkit\\cars_test_annos.mat")
+fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "devkit\\cars_test_annos.mat")))
 input_directory = "carBrains/dataset/cars_test/*.jpg"
 test_X = get_image_matrix(input_directory, 1, num_test_imgs) #8041
 test_Y = get_label_matrix(1, num_test_imgs)
