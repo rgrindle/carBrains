@@ -1,7 +1,7 @@
 # carBrains
 
 To use this code:
-1. Download and extract these files (they should be all in the same directory):
+1. Download and extract these 3 files (they should be all in the same directory):
     http://imagenet.stanford.edu/internal/car196/cars_train.tgz
     http://imagenet.stanford.edu/internal/car196/cars_test.tgz
     https://ai.stanford.edu/~jkrause/cars/car_devkit.tgz
