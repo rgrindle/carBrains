@@ -1,23 +1,20 @@
+import time
 import glob
-import numpy as np
+import os
 import keras
-from keras.models import Sequential,Input,Model
+import numpy as np
+import matplotlib.pyplot as plt
+from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
-from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
-from keras.datasets import fashion_mnist
-import numpy as np
 from keras.utils import to_categorical
+from keras.preprocessing.image import img_to_array, load_img
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-from tensorflow.python.client import device_lib
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 from skimage.transform import resize
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
-import os
-from scipy.io import loadmat
 from sklearn.metrics import classification_report
+from scipy.io import loadmat
+
 """
 These are the main variables to change
 """
@@ -82,12 +79,14 @@ def get_image_matrix(directory, start, end):
         matrix[i, :, :] = x
     return (matrix.astype('float32'))
 
-fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "cars_devkit\\cars_train_annos.mat")))
-input_directory = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_train/*.jpg")
+start_time = time.time()
+base_fp = os.environ['CARS_DATASET_PATH']
+fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_train_annos.mat")))
+input_directory = os.path.join(base_fp, "cars_train/*.jpg")
 train_X = get_image_matrix(input_directory, 1, num_train_imgs)
 train_Y = get_label_matrix(1, num_train_imgs)
-fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "cars_devkit\\cars_test_annos.mat")))
-input_directory = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_test/*.jpg")
+fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_test_annos.mat")))
+input_directory = os.path.join(base_fp, "cars_test/*.jpg")
 test_X = get_image_matrix(input_directory, 1, num_test_imgs)
 test_Y = get_label_matrix(1, num_test_imgs)
 # Debugging:
@@ -117,7 +116,12 @@ test_Y_one_hot = to_categorical(test_Y)
 # print('After conversion to one-hot:', train_Y_one_hot[0])
 
 train_X,valid_X,train_label,valid_label = train_test_split(train_X, train_Y_one_hot, test_size=0.2, random_state=13)
-print(train_X.shape,valid_X.shape,train_label.shape,valid_label.shape)
+
+# Debugging:
+# print(train_X.shape,valid_X.shape,train_label.shape,valid_label.shape)
+
+print("\nImage processing took %s seconds" % (time.time() - start_time))
+start_time = time.time()
 
 fashion_model = train_model()
 
@@ -125,6 +129,9 @@ fashion_model = train_model()
 # print("train Y")
 # print(train_Y_one_hot.shape)
 fashion_train = fashion_model.fit(train_X, train_label, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_label))
+
+print("\nTraining the model took %s seconds" % (time.time() - start_time))
+start_time = time.time()
 
 # Debugging:
 # print("test Y")
@@ -134,6 +141,8 @@ test_eval = fashion_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 # Debugging:
 # print("Full eval")
 # print(test_eval)
+
+print("\nTesting the model took %s seconds" % (time.time() - start_time))
 
 # Prints out the results on a per-class basis
 predicted_classes = fashion_model.predict(test_X)
@@ -183,6 +192,5 @@ plt.ylabel('Proportion Images Correctly Predicted')
 plt.legend()
 plt.show()
 
-
-
+# Saves the CNN to a file for analyzing later
 fashion_model.save("fashion_model_dropout.h5py")
