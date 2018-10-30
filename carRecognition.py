@@ -25,8 +25,8 @@ import os
 from scipy.io import loadmat
 from sklearn.metrics import classification_report
 
-num_train_imgs = 1001 #this gets -1
-num_test_imgs = 1001 #this gets -1
+num_train_imgs = 1001 #max 8144 #this gets -1
+num_test_imgs = 1001 #max 8041 #this gets -1
 image_shape = (100, 100, 1)
 
 def train_model():
@@ -87,11 +87,11 @@ def get_image_matrix(directory, start, end):
 
 fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "cars_devkit\\cars_train_annos.mat")))
 input_directory = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_train/*.jpg")
-train_X = get_image_matrix(input_directory, 1, num_train_imgs) #8144
+train_X = get_image_matrix(input_directory, 1, num_train_imgs)
 train_Y = get_label_matrix(1, num_train_imgs)
 fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "cars_devkit\\cars_test_annos.mat")))
 input_directory = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_test/*.jpg")
-test_X = get_image_matrix(input_directory, 1, num_test_imgs) #8041
+test_X = get_image_matrix(input_directory, 1, num_test_imgs)
 test_Y = get_label_matrix(1, num_test_imgs)
 print("Start")
 print(train_Y)
