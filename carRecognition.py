@@ -67,13 +67,28 @@ def get_label_matrix(start, end):
 
 # returns matrix of image data
 def get_image_matrix(directory, start, end):
-    image_filepaths = glob.glob(directory)[start:end]
+    image_filepaths = glob.glob(directory)[start-1:end]
     matrix = np.zeros((len(image_filepaths), image_shape[0], image_shape[1]))
+
+    if 'train' in directory:
+        using_train = True
+    elif 'test' in directory:
+        using_train = False
+    else:
+        print('test or train are not in directory', directory)
+        print('exiting')
+        exit()
 
     for i, filepath in enumerate(image_filepaths):
         img = load_img(image_filepaths[i])
         x = img_to_array(img)
         x = np.mean(x, axis=2)
+
+        # use bounding box and pad image
+        bb = ip.get_bb(i+start, train=using_train)
+        x = ip.apply_bb(x, bb)
+        x = ip.pad_image(x)
+
         x = x / 255.
         x = resize(x, (image_shape[0], image_shape[1]))
         matrix[i, :, :] = x
