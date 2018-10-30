@@ -23,6 +23,7 @@ from skimage.transform import resize
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 import os
 from scipy.io import loadmat
+from sklearn.metrics import classification_report
 
 num_train_imgs = 1001 #this gets -1
 num_test_imgs = 1001 #this gets -1
@@ -50,7 +51,7 @@ def train_model():
     fashion_model.add(Dense(128, activation='linear'))
     fashion_model.add(LeakyReLU(alpha=0.1))
     fashion_model.add(Dropout(0.3))
-    fashion_model.add(Dense(num_classes+1, activation='softmax'))
+    fashion_model.add(Dense(num_classes, activation='softmax'))
 
     fashion_model.summary()
 
@@ -61,7 +62,7 @@ def train_model():
 # returns an individual label
 def get_label(image_number):
     stuff = fp['annotations'][0][image_number - 1]
-    label = stuff[4][0][0]
+    label = stuff[4][0][0] - 1
     return label
 
 # returns matrix of numeric labels representing car model, make, year
@@ -85,11 +86,11 @@ def get_image_matrix(directory, start, end):
     return (matrix.astype('float32'))
 
 fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "devkit\\cars_train_annos.mat")))
-input_directory = "carBrains/dataset/cars_train/*.jpg"
+input_directory = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_train/*.jpg")
 train_X = get_image_matrix(input_directory, 1, num_train_imgs) #8144
 train_Y = get_label_matrix(1, num_train_imgs)
 fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "devkit\\cars_test_annos.mat")))
-input_directory = "carBrains/dataset/cars_test/*.jpg"
+input_directory = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_test/*.jpg")
 test_X = get_image_matrix(input_directory, 1, num_test_imgs) #8041
 test_Y = get_label_matrix(1, num_test_imgs)
 print("Start")
@@ -133,21 +134,52 @@ print(test_Y_one_hot.shape)
 test_eval = fashion_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 print('Test loss:', test_eval[0])
 print('Test accuracy:', test_eval[1])
+print("Full eval")
+print(test_eval)
+
+test_eval2 = fashion_model.evaluate(train_X[0:10], train_Y_one_hot[0:10], verbose=0)
+print("ts")
+print(test_eval2)
+
+predicted_classes = fashion_model.predict(test_X)
+predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
+target_names = ["Class {}".format(i) for i in range(num_classes)]
+print("Testing Data Classification Report")
+print(classification_report(test_Y, predicted_classes, target_names=target_names))
+
+"""
+predicted_classes = fashion_model.predict(train_X)
+predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
+target_names = ["Class {}".format(i) for i in range(num_classes)]
+print("Training Data Classification Report")
+print(classification_report(train_label, predicted_classes, target_names=target_names))
+"""
 
 accuracy = fashion_train.history['acc']
 val_accuracy = fashion_train.history['val_acc']
 loss = fashion_train.history['loss']
 val_loss = fashion_train.history['val_loss']
 epochs = range(len(accuracy))
+"""
+plt.figure()
+plt.rcParams.update({'font.size': 22})
 plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
 plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
 plt.title('Training and validation accuracy')
+plt.xlabel('Number of Epochs')
+plt.ylabel('Proportion Images Correctly Predicted')
 plt.legend()
+plt.show()
+"""
 plt.figure()
+plt.rcParams.update({'font.size': 22})
 plt.plot(epochs, loss, 'bo', label='Training loss')
 plt.plot(epochs, val_loss, 'b', label='Validation loss')
 plt.title('Training and validation loss')
+plt.xlabel('Number of Epochs')
+plt.ylabel('Loss')
 plt.legend()
 plt.show()
+
 
 fashion_model.save("fashion_model_dropout.h5py")
