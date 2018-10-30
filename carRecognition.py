@@ -1,9 +1,3 @@
-"""
-This is my attempt to far to get the fashion tutorial working with the images from our dataset.
-I think we are close to getting it working.
-The code is obviously very sloppy but we can clean it up later.
-"""
-
 import glob
 import numpy as np
 import keras
@@ -24,15 +18,18 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 import os
 from scipy.io import loadmat
 from sklearn.metrics import classification_report
+"""
+These are the main variables to change
+"""
+num_train_imgs = 1001        # max 8144
+num_test_imgs = 1001         # max 8041
+image_shape = (100, 100, 1)  # default: (28, 28, 1)
 
-num_train_imgs = 1001 #max 8144 #this gets -1
-num_test_imgs = 1001 #max 8041 #this gets -1
-image_shape = (100, 100, 1)
+batch_size = 64              # default: 64
+epochs = 20                  # default: 20
+num_classes = 196            # default: 196
 
 def train_model():
-    batch_size = 64
-    epochs = 20
-    num_classes = 196
 
     fashion_model = Sequential()
     fashion_model.add(Conv2D(32, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(image_shape[0], image_shape[1], image_shape[2])))
@@ -93,61 +90,64 @@ fp = loadmat(os.path.normpath(os.path.join(os.environ['CARS_DATASET_PATH'], "car
 input_directory = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_test/*.jpg")
 test_X = get_image_matrix(input_directory, 1, num_test_imgs)
 test_Y = get_label_matrix(1, num_test_imgs)
-print("Start")
-print(train_Y)
-print(test_Y)
+# Debugging:
+# print("Start")
+# print(train_Y)
+# print(test_Y)
 
 train_X = train_X.reshape(-1, image_shape[0], image_shape[1], image_shape[2])
 test_X = test_X.reshape(-1, image_shape[0], image_shape[1], image_shape[2])
-print("Train X")
-print(train_X.shape)
-print("Test X")
-print(test_X.shape)
+# Debugging:
+# print("Train X")
+# print(train_X.shape)
+# print("Test X")
+# print(test_X.shape)
 
 # Change the labels from categorical to one-hot encoding
 train_Y_one_hot = to_categorical(train_Y)
 test_Y_one_hot = to_categorical(test_Y)
-print("origional train y one hot test y one hot")
-print(train_Y_one_hot.shape)
-print("break")
-print(test_Y_one_hot.shape)
+# Debugging:
+# print("origional train y one hot test y one hot")
+# print(train_Y_one_hot.shape)
+# print("break")
+# print(test_Y_one_hot.shape)
 
-# Display the change for category label using one-hot encoding
-print('Original label:', train_Y[0])
-print('After conversion to one-hot:', train_Y_one_hot[0])
+# Display the change for category label using one-hot encoding, only for debugging purposes
+# print('Original label:', train_Y[0])
+# print('After conversion to one-hot:', train_Y_one_hot[0])
 
 train_X,valid_X,train_label,valid_label = train_test_split(train_X, train_Y_one_hot, test_size=0.2, random_state=13)
 print(train_X.shape,valid_X.shape,train_label.shape,valid_label.shape)
 
-batch_size = 64
-epochs = 20
-num_classes = 196
-
 fashion_model = train_model()
 
-print("train Y")
-print(train_Y_one_hot.shape)
+# Debugging:
+# print("train Y")
+# print(train_Y_one_hot.shape)
 fashion_train = fashion_model.fit(train_X, train_label, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_label))
 
-print("test Y")
-print(test_Y_one_hot.shape)
+# Debugging:
+# print("test Y")
+# print(test_Y_one_hot.shape)
 test_eval = fashion_model.evaluate(test_X, test_Y_one_hot, verbose=0)
-print('Test loss:', test_eval[0])
-print('Test accuracy:', test_eval[1])
-print("Full eval")
-print(test_eval)
 
-test_eval2 = fashion_model.evaluate(train_X[0:10], train_Y_one_hot[0:10], verbose=0)
-print("ts")
-print(test_eval2)
+# Debugging:
+# print("Full eval")
+# print(test_eval)
 
+# Prints out the results on a per-class basis
 predicted_classes = fashion_model.predict(test_X)
 predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
 target_names = ["Class {}".format(i) for i in range(num_classes)]
 print("Testing Data Classification Report")
 print(classification_report(test_Y, predicted_classes, target_names=target_names))
 
+# Printing out the results:
+print('Testing loss:', test_eval[0])
+print('Testing accuracy:', test_eval[1])
+
 """
+Original:
 predicted_classes = fashion_model.predict(train_X)
 predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
 target_names = ["Class {}".format(i) for i in range(num_classes)]
@@ -155,22 +155,14 @@ print("Training Data Classification Report")
 print(classification_report(train_label, predicted_classes, target_names=target_names))
 """
 
+# Prepping results for plotting
 accuracy = fashion_train.history['acc']
 val_accuracy = fashion_train.history['val_acc']
 loss = fashion_train.history['loss']
 val_loss = fashion_train.history['val_loss']
 epochs = range(len(accuracy))
-"""
-plt.figure()
-plt.rcParams.update({'font.size': 22})
-plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
-plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-plt.title('Training and validation accuracy')
-plt.xlabel('Number of Epochs')
-plt.ylabel('Proportion Images Correctly Predicted')
-plt.legend()
-plt.show()
-"""
+
+# Plotting the results
 plt.figure()
 plt.rcParams.update({'font.size': 22})
 plt.plot(epochs, loss, 'bo', label='Training loss')
@@ -180,6 +172,17 @@ plt.xlabel('Number of Epochs')
 plt.ylabel('Loss')
 plt.legend()
 plt.show()
+
+plt.figure()
+plt.rcParams.update({'font.size': 22})
+plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
+plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+plt.title('Training and validation accuracy')
+plt.xlabel('Number of Epochs')
+plt.ylabel('Proportion Images Correctly Predicted')
+plt.legend()
+plt.show()
+
 
 
 fashion_model.save("fashion_model_dropout.h5py")
