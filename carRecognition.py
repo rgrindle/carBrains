@@ -4,6 +4,7 @@ import os
 import keras
 import numpy as np
 import matplotlib.pyplot as plt
+import image_preprocessing as ip
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
@@ -61,8 +62,8 @@ def get_label(image_number):
 
 # returns matrix of numeric labels representing car model, make, year
 def get_label_matrix(start, end):
-    y=np.array(list(map(get_label, range(start, end))))
-    y.reshape((end-start, 1))
+    y=np.array(list(map(get_label, range(start-1, end))))
+    y.reshape((end-(start-1), 1))
     return (y.astype('float32'))
 
 # returns matrix of image data
