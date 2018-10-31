@@ -62,8 +62,8 @@ def get_label(image_number):
 
 # returns matrix of numeric labels representing car model, make, year
 def get_label_matrix(start, end):
-    y=np.array(list(map(get_label, range(start-1, end))))
-    y.reshape((end-(start-1), 1))
+    y=np.array(list(map(get_label, range(start, end))))
+    y.reshape((end-start, 1))
     return (y.astype('float32'))
 
 # returns matrix of image data
@@ -99,11 +99,11 @@ start_time = time.time()
 base_fp = os.environ['CARS_DATASET_PATH']
 fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_train_annos.mat")))
 input_directory = os.path.join(base_fp, "cars_train/*.jpg")
-train_X = get_image_matrix(input_directory, 1, num_train_imgs)
+train_X = get_image_matrix(input_directory, 1, num_train_imgs+1)
 train_Y = get_label_matrix(1, num_train_imgs)
 fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_test_annos.mat")))
 input_directory = os.path.join(base_fp, "cars_test/*.jpg")
-test_X = get_image_matrix(input_directory, 1, num_test_imgs)
+test_X = get_image_matrix(input_directory, 1, num_test_imgs+1)
 test_Y = get_label_matrix(1, num_test_imgs)
 # Debugging:
 # print("Start")
