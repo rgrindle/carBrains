@@ -27,32 +27,37 @@ batch_size = 64              # default: 64
 epochs = 20                  # default: 20
 num_classes = 196            # default: 196
 
+
 def train_model():
 
-    fashion_model = Sequential()
-    fashion_model.add(Conv2D(32, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(image_shape[0], image_shape[1], image_shape[2])))
-    fashion_model.add(LeakyReLU(alpha=0.1))
-    fashion_model.add(MaxPooling2D((2, 2), padding='same'))
-    fashion_model.add(Dropout(0.25))
-    fashion_model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
-    fashion_model.add(LeakyReLU(alpha=0.1))
-    fashion_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-    fashion_model.add(Dropout(0.25))
-    fashion_model.add(Conv2D(128, (3, 3), activation='linear', padding='same'))
-    fashion_model.add(LeakyReLU(alpha=0.1))
-    fashion_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-    fashion_model.add(Dropout(0.4))
-    fashion_model.add(Flatten())
-    fashion_model.add(Dense(128, activation='linear'))
-    fashion_model.add(LeakyReLU(alpha=0.1))
-    fashion_model.add(Dropout(0.3))
-    fashion_model.add(Dense(num_classes, activation='softmax'))
+    car_model = Sequential()
 
-    fashion_model.summary()
+    car_model.add(Conv2D(32, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(image_shape[0], image_shape[1], image_shape[2])))
+    car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(MaxPooling2D((2, 2), padding='same'))
+    car_model.add(Dropout(0.25))
 
-    fashion_model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
+    car_model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
+    car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+    car_model.add(Dropout(0.25))
 
-    return (fashion_model)
+    car_model.add(Conv2D(128, (3, 3), activation='linear', padding='same'))
+    car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+    car_model.add(Dropout(0.4))
+    car_model.add(Flatten())
+    car_model.add(Dense(128, activation='linear'))
+    car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(Dropout(0.3))
+    car_model.add(Dense(num_classes, activation='softmax'))
+
+    car_model.summary()
+
+    car_model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
+
+    return car_model
+
 
 # returns an individual label
 def get_label(image_number):
@@ -60,11 +65,13 @@ def get_label(image_number):
     label = stuff[4][0][0] - 1
     return label
 
+
 # returns matrix of numeric labels representing car model, make, year
 def get_label_matrix(start, end):
     y=np.array(list(map(get_label, range(start, end))))
     y.reshape((end-start, 1))
-    return (y.astype('float32'))
+    return y.astype('float32')
+
 
 # returns matrix of image data
 def get_image_matrix(directory, start, end):
@@ -93,7 +100,8 @@ def get_image_matrix(directory, start, end):
         x = x / 255.
         x = resize(x, (image_shape[0], image_shape[1]))
         matrix[i, :, :] = x
-    return (matrix.astype('float32'))
+    return matrix.astype('float32')
+
 
 start_time = time.time()
 base_fp = os.environ['CARS_DATASET_PATH']
@@ -131,7 +139,7 @@ test_Y_one_hot = to_categorical(test_Y)
 # print('Original label:', train_Y[0])
 # print('After conversion to one-hot:', train_Y_one_hot[0])
 
-train_X,valid_X,train_label,valid_label = train_test_split(train_X, train_Y_one_hot, test_size=0.2, random_state=13)
+train_X, valid_X, train_label, valid_label = train_test_split(train_X, train_Y_one_hot, test_size=0.2, random_state=13)
 
 # Debugging:
 # print(train_X.shape,valid_X.shape,train_label.shape,valid_label.shape)
@@ -139,12 +147,12 @@ train_X,valid_X,train_label,valid_label = train_test_split(train_X, train_Y_one_
 print("\nImage processing took %s seconds" % (time.time() - start_time))
 start_time = time.time()
 
-fashion_model = train_model()
+car_model = train_model()
 
 # Debugging:
 # print("train Y")
 # print(train_Y_one_hot.shape)
-fashion_train = fashion_model.fit(train_X, train_label, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_label))
+car_train = car_model.fit(train_X, train_label, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_label))
 
 print("\nTraining the model took %s seconds" % (time.time() - start_time))
 start_time = time.time()
@@ -152,7 +160,7 @@ start_time = time.time()
 # Debugging:
 # print("test Y")
 # print(test_Y_one_hot.shape)
-test_eval = fashion_model.evaluate(test_X, test_Y_one_hot, verbose=0)
+test_eval = car_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 
 # Debugging:
 # print("Full eval")
@@ -161,7 +169,7 @@ test_eval = fashion_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 print("\nTesting the model took %s seconds" % (time.time() - start_time))
 
 # Prints out the results on a per-class basis
-predicted_classes = fashion_model.predict(test_X)
+predicted_classes = car_model.predict(test_X)
 predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
 target_names = ["Class {}".format(i) for i in range(num_classes)]
 print("Testing Data Classification Report")
@@ -181,10 +189,10 @@ print(classification_report(train_label, predicted_classes, target_names=target_
 """
 
 # Prepping results for plotting
-accuracy = fashion_train.history['acc']
-val_accuracy = fashion_train.history['val_acc']
-loss = fashion_train.history['loss']
-val_loss = fashion_train.history['val_loss']
+accuracy = car_train.history['acc']
+val_accuracy = car_train.history['val_acc']
+loss = car_train.history['loss']
+val_loss = car_train.history['val_loss']
 epochs = range(len(accuracy))
 
 # Plotting the results
@@ -209,4 +217,4 @@ plt.legend()
 plt.show()
 
 # Saves the CNN to a file for analyzing later
-fashion_model.save("fashion_model_dropout.h5py")
+car_model.save("car_model_dropout.h5py")
