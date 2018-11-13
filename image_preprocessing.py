@@ -7,6 +7,11 @@ import os
 def pad_image(img):
     """Make image square with padding."""
 
+    # if square return img
+    if img.shape[0] == img.shape[1]:
+
+        return img
+    
     s = max(img.shape)
 
     if len(img.shape) == 3:
@@ -118,3 +123,52 @@ def get_bb(file_num, train=True):
 #     plt.imshow(x3)
 #
 # plt.show()
+
+import glob
+from skimage.transform import resize
+# from skimage.io import imsave
+from keras.preprocessing.image import img_to_array, load_img
+import matplotlib.pyplot as plt
+
+def save_preprocessed(in_dir, out_dir, image_shape):
+
+    skip = 0
+
+    image_filepaths = glob.glob(in_dir)[skip:]
+
+    if 'train' in in_dir:
+        using_train = True
+    elif 'test' in in_dir:
+        using_train = False
+    else:
+        print('test or train are not in directory', in_dir)
+        print('exiting')
+        exit()
+
+    if not os.path.exists(out_dir):
+
+        os.makedirs(out_dir)
+
+    for i, filepath in enumerate(image_filepaths):
+        img = load_img(image_filepaths[i])
+        x = img_to_array(img)
+        x = np.mean(x, axis=2)
+
+        # use bounding box and pad image
+        bb = get_bb(i+1+skip, train=using_train)
+        x = apply_bb(x, bb)
+        x = pad_image(x)
+
+        x = resize(x, (image_shape[0], image_shape[1]))
+        x.astype(int)
+
+        plt.imsave(os.path.join(out_dir, ('%05d' % (i+1+skip))+'.jpg'), x, cmap='gray')
+
+
+if __name__ == "__main__":
+
+    in_dir = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_train/*.jpg")
+    out_dir = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_train_preprocessed/")
+    image_shape = (100, 100, 1)
+
+    save_preprocessed(in_dir, out_dir, image_shape)
