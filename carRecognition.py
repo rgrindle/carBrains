@@ -19,8 +19,8 @@ from scipy.io import loadmat
 """
 These are the main variables to change
 """
-num_train_imgs = 1001        # max 8144
-num_test_imgs = 1001         # max 8041
+num_train_imgs = 1400        # max 8144
+num_test_imgs = 1400         # max 8041
 image_shape = (100, 100, 1)  # default: (28, 28, 1)
 
 batch_size = 64              # default: 64
@@ -144,7 +144,7 @@ train_X, valid_X, train_label, valid_label = train_test_split(train_X, train_Y_o
 # Debugging:
 # print(train_X.shape,valid_X.shape,train_label.shape,valid_label.shape)
 
-print("\nImage processing took %s seconds" % (time.time() - start_time))
+img_preprocessing_time = (time.time() - start_time)
 start_time = time.time()
 
 car_model = train_model()
@@ -154,7 +154,7 @@ car_model = train_model()
 # print(train_Y_one_hot.shape)
 car_train = car_model.fit(train_X, train_label, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_label))
 
-print("\nTraining the model took %s seconds" % (time.time() - start_time))
+model_train_time = (time.time() - start_time)
 start_time = time.time()
 
 # Debugging:
@@ -166,7 +166,7 @@ test_eval = car_model.evaluate(test_X, test_Y_one_hot, verbose=0)
 # print("Full eval")
 # print(test_eval)
 
-print("\nTesting the model took %s seconds" % (time.time() - start_time))
+model_test_time = (time.time() - start_time)
 
 # Prints out the results on a per-class basis
 predicted_classes = car_model.predict(test_X)
@@ -194,6 +194,10 @@ val_accuracy = car_train.history['val_acc']
 loss = car_train.history['loss']
 val_loss = car_train.history['val_loss']
 epochs = range(len(accuracy))
+
+print("\nImage preprocessing took %s seconds" % (img_preprocessing_time))
+print("\nTraining the model took %s seconds" % (model_train_time))
+print("\nTesting the model took %s seconds" % (model_test_time))
 
 # Plotting the results
 plt.figure()
