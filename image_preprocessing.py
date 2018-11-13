@@ -11,7 +11,7 @@ def pad_image(img):
     if img.shape[0] == img.shape[1]:
 
         return img
-    
+
     s = max(img.shape)
 
     if len(img.shape) == 3:
@@ -132,7 +132,7 @@ import matplotlib.pyplot as plt
 
 def save_preprocessed(in_dir, out_dir, image_shape):
 
-    skip = 0
+    skip = 3346
 
     image_filepaths = glob.glob(in_dir)[skip:]
 
@@ -167,8 +167,10 @@ def save_preprocessed(in_dir, out_dir, image_shape):
 
 if __name__ == "__main__":
 
-    in_dir = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_train/*.jpg")
-    out_dir = os.path.join(os.environ['CARS_DATASET_PATH'], "cars_train_preprocessed/")
+    data_type = 'train'
+
+    in_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'/*.jpg')
+    out_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'_preprocessed/')
     image_shape = (100, 100, 1)
 
     save_preprocessed(in_dir, out_dir, image_shape)
