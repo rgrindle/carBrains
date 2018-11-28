@@ -11,6 +11,8 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.advanced_activations import LeakyReLU
 from keras.utils import to_categorical
 from keras.preprocessing.image import img_to_array, load_img
+from keras import layers
+from keras.layers import Activation, Dense
 from sklearn.model_selection import train_test_split
 from skimage.transform import resize
 from sklearn.metrics import classification_report
@@ -19,12 +21,12 @@ from scipy.io import loadmat
 """
 These are the main variables to change
 """
-num_train_imgs = 1400        # max 8144
-num_test_imgs = 1400         # max 8041
+num_train_imgs = 8144        # max 8144
+num_test_imgs = 8041         # max 8041
 image_shape = (100, 100, 1)  # default: (28, 28, 1)
 
 batch_size = 64              # default: 64
-epochs = 20                  # default: 20
+epochs = 35                  # default: 20
 num_classes = 196            # default: 196
 
 
@@ -32,23 +34,56 @@ def train_model():
 
     car_model = Sequential()
 
+    # car_model.add(Conv2D(32, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(image_shape[0], image_shape[1], image_shape[2])))
+    # car_model.add(layers.BatchNormalization())
+    # car_model.add(layers.Activation("relu"))
+    #
+    # car_model.add(layers.Conv2D(64, (3, 3), use_bias=False))
+    # car_model.add(layers.BatchNormalization())
+    # car_model.add(layers.Activation("relu"))
+    #
+    # car_model.add(layers.Conv2D(128, (3, 3), use_bias=False))
+    # car_model.add(layers.BatchNormalization())
+    # car_model.add(layers.Activation("relu"))
+    #
+    # car_model.add(layers.Dense(128, use_bias=False))
+    # car_model.add(layers.BatchNormalization())
+    # car_model.add(Activation("relu"))
+    #
+    # car_model.add(layers.Dense(num_classes, use_bias=False))
+    # car_model.add(layers.BatchNormalization())
+    # car_model.add(Activation("softmax"))
+
+
+    mp1 = 3   #default 2
+    mp2 = 3   #default 2
+
     car_model.add(Conv2D(32, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(image_shape[0], image_shape[1], image_shape[2])))
-    car_model.add(LeakyReLU(alpha=0.1))
-    car_model.add(MaxPooling2D((2, 2), padding='same'))
+    # car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(layers.Activation("relu"))
+    car_model.add(MaxPooling2D((mp1, mp2), padding='same'))
     car_model.add(Dropout(0.25))
 
     car_model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
-    car_model.add(LeakyReLU(alpha=0.1))
-    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+    # car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(layers.Activation("relu"))
+    car_model.add(MaxPooling2D(pool_size=(mp1, mp2), padding='same'))
     car_model.add(Dropout(0.25))
 
     car_model.add(Conv2D(128, (3, 3), activation='linear', padding='same'))
-    car_model.add(LeakyReLU(alpha=0.1))
-    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+    # car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(layers.Activation("relu"))
+    car_model.add(MaxPooling2D(pool_size=(mp1, mp2), padding='same'))
     car_model.add(Dropout(0.4))
+
     car_model.add(Flatten())
     car_model.add(Dense(128, activation='linear'))
-    car_model.add(LeakyReLU(alpha=0.1))
+    # car_model.add(LeakyReLU(alpha=0.1))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(layers.Activation("relu"))
     car_model.add(Dropout(0.3))
     car_model.add(Dense(num_classes, activation='softmax'))
 
@@ -90,15 +125,16 @@ def get_image_matrix(directory, start, end):
     for i, filepath in enumerate(image_filepaths):
         img = load_img(image_filepaths[i])
         x = img_to_array(img)
-        x = np.mean(x, axis=2)
-
-        # use bounding box and pad image
-        bb = ip.get_bb(i+start, train=using_train)
-        x = ip.apply_bb(x, bb)
-        x = ip.pad_image(x)
+        x = x[:,:,0]
+        # x = np.mean(x, axis=2)
+        #
+        # # use bounding box and pad image
+        # bb = ip.get_bb(i+start, train=using_train)
+        # x = ip.apply_bb(x, bb)
+        # x = ip.pad_image(x)
 
         x = x / 255.
-        x = resize(x, (image_shape[0], image_shape[1]))
+        # x = resize(x, (image_shape[0], image_shape[1]))
         matrix[i, :, :] = x
     return matrix.astype('float32')
 
@@ -106,11 +142,11 @@ def get_image_matrix(directory, start, end):
 start_time = time.time()
 base_fp = os.environ['CARS_DATASET_PATH']
 fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_train_annos.mat")))
-input_directory = os.path.join(base_fp, "cars_train/*.jpg")
+input_directory = os.path.join(base_fp, "cars_train_preprocessed/*.jpg")
 train_X = get_image_matrix(input_directory, 1, num_train_imgs)
 train_Y = get_label_matrix(1, num_train_imgs + 1)
 fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_test_annos.mat")))
-input_directory = os.path.join(base_fp, "cars_test/*.jpg")
+input_directory = os.path.join(base_fp, "cars_test_preprocessed/*.jpg")
 test_X = get_image_matrix(input_directory, 1, num_test_imgs)
 test_Y = get_label_matrix(1, num_test_imgs + 1)
 # Debugging:
