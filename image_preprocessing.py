@@ -165,11 +165,11 @@ def save_preprocessed(in_dir, out_dir, image_shape):
         plt.imsave(os.path.join(out_dir, ('%05d' % (i+1+skip))+'.jpg'), x, cmap='gray')
 
 
-def save_modified(in_dir, out_dir, name_offset, augment_func):
+def save_modified(in_dir, out_dir, last_file_num, name_offset, augment_func):
 
     skip = 0
 
-    image_filepaths = glob.glob(in_dir)[skip:8144]
+    image_filepaths = glob.glob(in_dir)[skip:last_file_num]
 
     if not os.path.exists(os.path.dirname(out_dir)):
 
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     # flip
     # f = lambda  img: np.fliplr(img)
     #
-    # save_modified(in_dir, out_dir, 8144, f)
+    # save_modified(in_dir, out_dir, 8144, 8144, f)
 
     # add gaussian noise
     def g(img):
@@ -212,4 +212,4 @@ if __name__ == "__main__":
         np.clip(img+noise, 0, 255)
         return x.astype('uint8')
 
-    save_modified(in_dir, out_dir, 2*8144, g)
+    save_modified(in_dir, out_dir, 2*8144, 2*8144, g)
