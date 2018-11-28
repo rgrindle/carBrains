@@ -42,7 +42,6 @@ def pad_image(img):
 
 def apply_bb(img, bb):
     """Crop img to only view area inside bounding box.
-
     bb = [slice(y_min, y_max), slice(x_min, x_max)]"""
 
     return img[bb[1],bb[0]]
@@ -132,7 +131,7 @@ import matplotlib.pyplot as plt
 
 def save_preprocessed(in_dir, out_dir, image_shape):
 
-    skip = 3346
+    skip = 0
 
     image_filepaths = glob.glob(in_dir)[skip:]
 
@@ -145,11 +144,12 @@ def save_preprocessed(in_dir, out_dir, image_shape):
         print('exiting')
         exit()
 
-    if not os.path.exists(out_dir):
+    if not os.path.exists(os.path.dirname(out_dir)):
 
         os.makedirs(out_dir)
 
     for i, filepath in enumerate(image_filepaths):
+
         img = load_img(image_filepaths[i])
         x = img_to_array(img)
         x = np.mean(x, axis=2)
@@ -165,12 +165,51 @@ def save_preprocessed(in_dir, out_dir, image_shape):
         plt.imsave(os.path.join(out_dir, ('%05d' % (i+1+skip))+'.jpg'), x, cmap='gray')
 
 
+def save_modified(in_dir, out_dir, name_offset, augment_func):
+
+    skip = 0
+
+    image_filepaths = glob.glob(in_dir)[skip:8144]
+
+    if not os.path.exists(os.path.dirname(out_dir)):
+
+        os.makedirs(out_dir)
+
+    for i, filepath in enumerate(image_filepaths):
+
+        img = load_img(image_filepaths[i])
+
+        x = augment_func(img)
+
+        plt.imsave(os.path.join(out_dir, ('%05d' % (i+1+skip+name_offset))+'.jpg'), x)
+
+
 if __name__ == "__main__":
+
+    # for data_type in ('train', 'test'):
+
+        # in_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'/*.jpg')
+        # out_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'_preprocessed/')
+        # image_shape = (100, 100, 1)
+        #
+        # save_preprocessed(in_dir, out_dir, image_shape)
 
     data_type = 'train'
 
-    in_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'/*.jpg')
-    out_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'_preprocessed/')
-    image_shape = (100, 100, 1)
+    in_dir  = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_' + data_type + '_preprocessed')+'\\*.jpg'
+    out_dir = os.path.dirname(in_dir)
 
-    save_preprocessed(in_dir, out_dir, image_shape)
+    # flip
+    # f = lambda  img: np.fliplr(img)
+    #
+    # save_modified(in_dir, out_dir, 8144, f)
+
+    # add gaussian noise
+    def g(img):
+
+        x = img_to_array(img)
+        noise = np.random.normal(0, 4, size=(100, 100, 3))
+        np.clip(img+noise, 0, 255)
+        return x.astype('uint8')
+
+    save_modified(in_dir, out_dir, 2*8144, g)
