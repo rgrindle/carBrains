@@ -26,13 +26,13 @@ num_test_imgs = 8041         # max 8041
 image_shape = (100, 100, 1)  # default: (28, 28, 1)
 
 batch_size = 64              # default: 64
-epochs = 35                  # default: 20
+epochs = 70                  # default: 20
 num_classes = 196            # default: 196
 
 use_flipped = True
 use_gaussian = False
 
-repeat_size = 0
+repeat_size = 1
 
 if use_flipped:
 
@@ -42,7 +42,7 @@ if use_gaussian:
 
     repeat_size += 2
     
-num_train_imgs += repeat_size*num_train_imgs
+num_train_imgs = repeat_size*num_train_imgs
 
 def train_model():
 
@@ -158,7 +158,7 @@ base_fp = os.environ['CARS_DATASET_PATH']
 fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_train_annos.mat")))
 input_directory = os.path.join(base_fp, "cars_train_preprocessed/*.jpg")
 train_X = get_image_matrix(input_directory, 1, num_train_imgs)
-train_Y = get_label_matrix(1, num_train_imgs + 1)
+train_Y = get_label_matrix(1, 8144 + 1)
 train_Y = np.array([train_Y,]*repeat_size).flatten()
 fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_test_annos.mat")))
 input_directory = os.path.join(base_fp, "cars_test_preprocessed/*.jpg")
