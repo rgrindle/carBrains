@@ -29,11 +29,11 @@ num_test_imgs = 8041         # max 8041
 image_shape = (100, 100, 1)  # default: (28, 28, 1)
 
 batch_size = 64              # default: 64
-epochs = 70                  # default: 20
+epochs = 24                  # default: 20
 num_classes = 196            # default: 196
 
 use_flipped = True
-use_gaussian = False
+use_gaussian = True
 
 repeat_size = 1
 
@@ -51,62 +51,36 @@ def train_model():
 
     car_model = Sequential()
 
-    # car_model.add(Conv2D(32, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(image_shape[0], image_shape[1], image_shape[2])))
-    # car_model.add(layers.BatchNormalization())
-    # car_model.add(layers.Activation("relu"))
-    #
-    # car_model.add(layers.Conv2D(64, (3, 3), use_bias=False))
-    # car_model.add(layers.BatchNormalization())
-    # car_model.add(layers.Activation("relu"))
-    #
-    # car_model.add(layers.Conv2D(128, (3, 3), use_bias=False))
-    # car_model.add(layers.BatchNormalization())
-    # car_model.add(layers.Activation("relu"))
-    #
-    # car_model.add(layers.Dense(128, use_bias=False))
-    # car_model.add(layers.BatchNormalization())
-    # car_model.add(Activation("relu"))
-    #
-    # car_model.add(layers.Dense(num_classes, use_bias=False))
-    # car_model.add(layers.BatchNormalization())
-    # car_model.add(Activation("softmax"))
-
-
-    mp1 = 3   #default 2
-    mp2 = 3   #default 2
-
     car_model.add(Conv2D(32, kernel_size=(3, 3), activation='linear', padding='same', input_shape=(image_shape[0], image_shape[1], image_shape[2])))
-    # car_model.add(LeakyReLU(alpha=0.1))
-    car_model.add(layers.BatchNormalization())
     car_model.add(layers.Activation("relu"))
-    car_model.add(MaxPooling2D((mp1, mp2), padding='same'))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(MaxPooling2D((2, 2), padding='same'))
     car_model.add(Dropout(0.25))
 
     car_model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
-    # car_model.add(LeakyReLU(alpha=0.1))
-    car_model.add(layers.BatchNormalization())
     car_model.add(layers.Activation("relu"))
-    car_model.add(MaxPooling2D(pool_size=(mp1, mp2), padding='same'))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
     car_model.add(Dropout(0.25))
 
     car_model.add(Conv2D(128, (3, 3), activation='linear', padding='same'))
-    # car_model.add(LeakyReLU(alpha=0.1))
-    car_model.add(layers.BatchNormalization())
     car_model.add(layers.Activation("relu"))
-    car_model.add(MaxPooling2D(pool_size=(mp1, mp2), padding='same'))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
     car_model.add(Dropout(0.4))
 
     car_model.add(Flatten())
+
     car_model.add(Dense(128, activation='linear'))
-    # car_model.add(LeakyReLU(alpha=0.1))
-    car_model.add(layers.BatchNormalization())
     car_model.add(layers.Activation("relu"))
+    car_model.add(layers.BatchNormalization())
     car_model.add(Dropout(0.3))
+
     car_model.add(Dense(num_classes, activation='softmax'))
 
     car_model.summary()
 
-    car_model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
+    car_model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.adam(), metrics=['accuracy'])
 
     return car_model
 
