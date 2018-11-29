@@ -208,8 +208,8 @@ if __name__ == "__main__":
     def g(img):
 
         x = img_to_array(img)
-        noise = np.random.normal(0, 4, size=(100, 100, 3))
-        np.clip(img+noise, 0, 255)
+        noise = np.random.normal(0, 20, size=(100, 100, 3))
+        x = np.clip(x+noise, 0, 255)
         return x.astype('uint8')
 
     save_modified(in_dir, out_dir, 2*8144, 2*8144, g)

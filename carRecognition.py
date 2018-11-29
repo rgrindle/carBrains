@@ -22,7 +22,7 @@ num_test_imgs = 8041         # max 8041
 image_shape = (100, 100, 1)  # default: (28, 28, 1)
 
 batch_size = 64              # default: 64
-epochs = 24                  # default: 20
+epochs = 45                  # default: 20
 num_classes = 196            # default: 196
 
 use_flipped = True
@@ -48,6 +48,18 @@ def train_model():
     car_model.add(layers.Activation("relu"))
     car_model.add(layers.BatchNormalization())
     car_model.add(MaxPooling2D((2, 2), padding='same'))
+    car_model.add(Dropout(0.25))
+
+    car_model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
+    car_model.add(layers.Activation("relu"))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+    car_model.add(Dropout(0.25))
+
+    car_model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
+    car_model.add(layers.Activation("relu"))
+    car_model.add(layers.BatchNormalization())
+    car_model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
     car_model.add(Dropout(0.25))
 
     car_model.add(Conv2D(64, (3, 3), activation='linear', padding='same'))
