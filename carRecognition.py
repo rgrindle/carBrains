@@ -17,6 +17,9 @@ from sklearn.model_selection import train_test_split
 from skimage.transform import resize
 from sklearn.metrics import classification_report
 from scipy.io import loadmat
+import pandas as pd
+import time
+import datetime
 
 """
 These are the main variables to change
@@ -223,12 +226,30 @@ model_test_time = (time.time() - start_time)
 predicted_classes = car_model.predict(test_X)
 predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
 target_names = ["Class {}".format(i) for i in range(num_classes)]
+
+ts = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
+save_path = os.path.join('saved_data', ts)
+
+if not os.path.exists(save_path):
+
+    os.makedirs(save_path)
+
+f = open(os.path.join(save_path, 'log.txt'), 'w')
+
+car_model.summary(print_fn=f.write)
+
 print("Testing Data Classification Report")
 print(classification_report(test_Y, predicted_classes, target_names=target_names))
+
+print("Testing Data Classification Report", file=f)
+print(classification_report(test_Y, predicted_classes, target_names=target_names), file=f)
 
 # Printing out the results:
 print('Testing loss:', test_eval[0])
 print('Testing accuracy:', test_eval[1])
+
+print('Testing loss:', test_eval[0], file=f)
+print('Testing accuracy:', test_eval[1], file=f)
 
 """
 Original:
@@ -250,26 +271,62 @@ print("\nImage preprocessing took %s seconds" % (img_preprocessing_time))
 print("\nTraining the model took %s seconds" % (model_train_time))
 print("\nTesting the model took %s seconds" % (model_test_time))
 
+print("\nImage preprocessing took %s seconds" % (img_preprocessing_time), file=f)
+print("\nTraining the model took %s seconds" % (model_train_time), file=f)
+print("\nTesting the model took %s seconds" % (model_test_time), file=f)
+
+f.close()
+
+# save data
+data = np.array([accuracy, val_accuracy, loss, val_loss]).T
+df = pd.DataFrame(data, columns=['Training Accuracy', 'Validation Accuracy', 'Training Loss', 'Validation Loss'])
+df.to_csv(os.path.join(save_path, 'acc_and_loss_data.csv'), index_label='Epoch', header=True)
+
 # Plotting the results
 plt.figure()
-plt.rcParams.update({'font.size': 22})
-plt.plot(epochs, loss, 'bo', label='Training loss')
-plt.plot(epochs, val_loss, 'b', label='Validation loss')
-plt.title('Training and validation loss')
-plt.xlabel('Number of Epochs')
-plt.ylabel('Loss')
-plt.legend()
-plt.show()
 
-plt.figure()
-plt.rcParams.update({'font.size': 22})
-plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
-plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-plt.title('Training and validation accuracy')
-plt.xlabel('Number of Epochs')
-plt.ylabel('Proportion Images Correctly Predicted')
-plt.legend()
-plt.show()
+def loss_fig(ax):
+    ax.plot(epochs, loss, 'C0', label='Training loss')
+    ax.plot(epochs, val_loss, 'C1', label='Validation loss')
+    ax.set_title('Loss')
+    ax.set_xlabel('Number of Epochs')
+    ax.set_ylabel('Loss')
+    ax.legend()
+
+def acc_fig(ax):
+    # plt.rcParams.update({'font.size': 12})
+    ax.plot(epochs, accuracy, 'C0', label='Training Accuracy')
+    ax.plot(epochs, val_accuracy, 'C1', label='Validation Accuracy')
+    ax.set_title('Accuracy')
+    ax.set_xlabel('Number of Epochs')
+    ax.set_ylabel('Fraction of Images Correctly Predicted')
+    ax.legend()
+
+
+w = 6.4
+h = 4.8
+
+plt.rcParams.update({'font.size': 12})
+
+fig = plt.figure(figsize=(2*w,h))
+ax = fig.add_subplot(1,2,1)
+loss_fig(ax)
+ax = fig.add_subplot(1,2,2)
+acc_fig(ax)
+plt.tight_layout()
+plt.savefig(os.path.join(save_path, 'acc_and_loss.png'))
+
+fig = plt.figure(figsize=(w,h))
+ax = fig.add_subplot(1,1,1)
+loss_fig(ax)
+plt.tight_layout()
+plt.savefig(os.path.join(save_path, 'loss_only.png'))
+
+fig = plt.figure(figsize=(w,h))
+ax = fig.add_subplot(1,1,1)
+acc_fig(ax)
+plt.tight_layout()
+plt.savefig(os.path.join(save_path, 'acc_only.png'))
 
 # Saves the CNN to a file for analyzing later
-car_model.save("car_model_dropout.h5py")
+car_model.save(os.path.join(save_path, "car_model_dropout.h5py"))
