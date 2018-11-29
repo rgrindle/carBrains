@@ -1,29 +1,22 @@
-import time
 import glob
 import os
 import keras
 import numpy as np
 import matplotlib.pyplot as plt
-import image_preprocessing as ip
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
-from keras.layers.advanced_activations import LeakyReLU
 from keras.utils import to_categorical
 from keras.preprocessing.image import img_to_array, load_img
 from keras import layers
 from keras.layers import Activation, Dense
 from sklearn.model_selection import train_test_split
-from skimage.transform import resize
 from sklearn.metrics import classification_report
 from scipy.io import loadmat
 import pandas as pd
 import time
 import datetime
 
-"""
-These are the main variables to change
-"""
 num_train_imgs = 8144        # max 8144
 num_test_imgs = 8041         # max 8041
 image_shape = (100, 100, 1)  # default: (28, 28, 1)
@@ -141,58 +134,27 @@ fp = loadmat(os.path.normpath(os.path.join(base_fp, "cars_devkit/cars_test_annos
 input_directory = os.path.join(base_fp, "cars_test_preprocessed/*.jpg")
 test_X = get_image_matrix(input_directory, 1, num_test_imgs)
 test_Y = get_label_matrix(1, num_test_imgs + 1)
-# Debugging:
-# print("Start")
-# print(train_Y)
-# print(test_Y)
 
 train_X = train_X.reshape(-1, image_shape[0], image_shape[1], image_shape[2])
 test_X = test_X.reshape(-1, image_shape[0], image_shape[1], image_shape[2])
-# Debugging:
-# print("Train X")
-# print(train_X.shape)
-# print("Test X")
-# print(test_X.shape)
 
 # Change the labels from categorical to one-hot encoding
 train_Y_one_hot = to_categorical(train_Y)
 test_Y_one_hot = to_categorical(test_Y)
-# Debugging:
-# print("origional train y one hot test y one hot")
-# print(train_Y_one_hot.shape)
-# print("break")
-# print(test_Y_one_hot.shape)
-
-# Display the change for category label using one-hot encoding, only for debugging purposes
-# print('Original label:', train_Y[0])
-# print('After conversion to one-hot:', train_Y_one_hot[0])
 
 train_X, valid_X, train_label, valid_label = train_test_split(train_X, train_Y_one_hot, test_size=0.2, random_state=13)
-
-# Debugging:
-# print(train_X.shape,valid_X.shape,train_label.shape,valid_label.shape)
 
 img_preprocessing_time = (time.time() - start_time)
 start_time = time.time()
 
 car_model = train_model()
 
-# Debugging:
-# print("train Y")
-# print(train_Y_one_hot.shape)
 car_train = car_model.fit(train_X, train_label, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_label))
 
 model_train_time = (time.time() - start_time)
 start_time = time.time()
 
-# Debugging:
-# print("test Y")
-# print(test_Y_one_hot.shape)
 test_eval = car_model.evaluate(test_X, test_Y_one_hot, verbose=0)
-
-# Debugging:
-# print("Full eval")
-# print(test_eval)
 
 model_test_time = (time.time() - start_time)
 
@@ -224,15 +186,6 @@ print('Testing accuracy:', test_eval[1])
 
 print('Testing loss:', test_eval[0], file=f)
 print('Testing accuracy:', test_eval[1], file=f)
-
-"""
-Original:
-predicted_classes = fashion_model.predict(train_X)
-predicted_classes = np.argmax(np.round(predicted_classes), axis=1)
-target_names = ["Class {}".format(i) for i in range(num_classes)]
-print("Training Data Classification Report")
-print(classification_report(train_label, predicted_classes, target_names=target_names))
-"""
 
 # Prepping results for plotting
 accuracy = car_train.history['acc']
