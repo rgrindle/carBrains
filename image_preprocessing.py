@@ -186,13 +186,13 @@ def save_modified(in_dir, out_dir, last_file_num, name_offset, augment_func):
 
 if __name__ == "__main__":
 
-    # for data_type in ('train', 'test'):
+    for data_type in ('train', 'test'):
 
-        # in_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'/*.jpg')
-        # out_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'_preprocessed/')
-        # image_shape = (100, 100, 1)
-        #
-        # save_preprocessed(in_dir, out_dir, image_shape)
+        in_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'/*.jpg')
+        out_dir = os.path.join(os.environ['CARS_DATASET_PATH'], 'cars_'+data_type+'_preprocessed/')
+        image_shape = (100, 100, 1)
+        
+        save_preprocessed(in_dir, out_dir, image_shape)
 
     data_type = 'train'
 
@@ -200,15 +200,15 @@ if __name__ == "__main__":
     out_dir = os.path.dirname(in_dir)
 
     # flip
-    # f = lambda  img: np.fliplr(img)
-    #
-    # save_modified(in_dir, out_dir, 8144, 8144, f)
+    f = lambda  img: np.fliplr(img)
+    
+    save_modified(in_dir, out_dir, 8144, 8144, f)
 
     # add gaussian noise
     def g(img):
 
         x = img_to_array(img)
-        noise = np.random.normal(0, 20, size=(100, 100, 3))
+        noise = np.random.normal(0, 2.5, size=(100, 100, 3))
         x = np.clip(x+noise, 0, 255)
         return x.astype('uint8')
 
